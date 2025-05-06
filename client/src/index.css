@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 217 35% 12%;
+  --foreground: 0 0% 100%;
+  --muted: 217 35% 18%;
+  --muted-foreground: 215 16% 72%;
+  --popover: 217 35% 12%;
+  --popover-foreground: 0 0% 100%;
+  --card: 223 30% 9%;
+  --card-foreground: 0 0% 100%;
+  --border: 217 27% 16%;
+  --input: 217 27% 16%;
+  --primary: 217 69% 55%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 223 30% 9%;
+  --secondary-foreground: 0 0% 100%;
+  --accent: 217 69% 55%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --ring: 217 69% 55%;
+  --radius: 0.5rem;
+  --chart-1: 217 69% 55%;
+  --chart-2: 142 71% 45%;
+  --chart-3: 37 90% 51%;
+  --chart-4: 4 86% 58%;
+  --chart-5: 262 83% 58%;
+  --sidebar-background: 223 30% 9%;
+  --sidebar-foreground: 0 0% 100%;
+  --sidebar-primary: 217 69% 55%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 217 69% 55%;
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-border: 217 27% 16%;
+  --sidebar-ring: 217 69% 55%;
+  --success: 142 71% 45%;
+  --warning: 37 90% 51%;
+  --danger: 4 86% 58%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-primary text-foreground font-sans antialiased;
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px hsl(var(--secondary)) inset !important;
+    -webkit-text-fill-color: hsl(var(--foreground)) !important;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    @apply h-1.5 w-1.5;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-secondary;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply rounded bg-muted;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground;
+  }
+}
