@@ -1,6 +1,7 @@
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
+import GlucoLogo from "@/components/GlucoLogo";
 
 interface TopBarProps {
   user: any;
@@ -27,10 +28,10 @@ export default function TopBar({ user }: TopBarProps) {
   };
 
   return (
-    <header className="bg-secondary px-4 py-4 shadow-md">
+    <header className="bg-secondary px-4 py-3 shadow-md">
       <div className="container mx-auto flex items-center justify-between">
         <div className="flex items-center">
-          <i className="ri-heart-pulse-line mr-2 text-2xl text-accent"></i>
+          <GlucoLogo size={36} className="mr-2" />
           <h1 className="text-xl font-bold">GLUCOTRACK</h1>
         </div>
         <div className="flex items-center">

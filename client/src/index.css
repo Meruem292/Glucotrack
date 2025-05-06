@@ -49,6 +49,10 @@
   body {
     @apply bg-primary text-foreground font-sans antialiased;
   }
+  
+  .auth-bg {
+    background-color: #4285F4;
+  }
 
   input:-webkit-autofill,
   input:-webkit-autofill:hover,
