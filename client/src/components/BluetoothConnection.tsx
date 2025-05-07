@@ -1,15 +1,29 @@
 import { useState, useEffect } from "react";
 import { auth, database } from "@/lib/firebase";
-import { ref, update, onValue } from "firebase/database";
+import { ref, update, onValue, push } from "firebase/database";
 import { useToast } from "@/hooks/use-toast";
 
-interface BluetoothConnectionProps {
-  onDataReceived?: (data: any) => void;
+interface HealthData {
+  glucose: number | null;
+  heartRate: number | null;
+  spo2: number | null;
+  timestamp: number | null;
 }
 
-export default function BluetoothConnection({ onDataReceived }: BluetoothConnectionProps) {
+interface BluetoothConnectionProps {
+  onDataReceived?: (data: HealthData) => void;
+  onCalibrationStart?: () => void;
+  onCalibrationEnd?: () => void;
+}
+
+export default function BluetoothConnection({ 
+  onDataReceived, 
+  onCalibrationStart, 
+  onCalibrationEnd 
+}: BluetoothConnectionProps) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+  const [isCalibrating, setIsCalibrating] = useState(false);
   const [device, setDevice] = useState<BluetoothDevice | null>(null);
   const [server, setServer] = useState<BluetoothRemoteGATTServer | null>(null);
   const [characteristic, setCharacteristic] = useState<BluetoothRemoteGATTCharacteristic | null>(null);
@@ -61,10 +75,10 @@ export default function BluetoothConnection({ onDataReceived }: BluetoothConnect
       // Note: You'll need to replace this with your actual ESP32 service UUID
       const device = await navigator.bluetooth.requestDevice({
         filters: [
-          { services: ['health_thermometer'] }, // Example service, replace with your ESP32 service
           { namePrefix: 'ESP32' }
         ],
-        optionalServices: ['battery_service', 'health_thermometer'] // Add any optional services you'll use
+        // These are example UUIDs - replace with the actual UUIDs your ESP32 device uses
+        optionalServices: ['0000180d-0000-1000-8000-00805f9b34fb'] 
       });
 
       setDevice(device);
@@ -90,16 +104,25 @@ export default function BluetoothConnection({ onDataReceived }: BluetoothConnect
 
       // Connect to GATT server
       const server = await device.gatt?.connect();
-      setServer(server);
+      if (server) {
+        setServer(server);
 
-      // Get the primary service
-      // Replace 'health_thermometer' with your ESP32 service UUID
-      const service = await server?.getPrimaryService('health_thermometer');
+        toast({
+          title: "Connected",
+          description: `Connected to ${device.name || 'ESP32 device'}`
+        });
 
-      // Get the characteristic that provides the health data
-      // Replace with your ESP32 characteristic UUID
-      const characteristic = await service?.getCharacteristic('measurement');
-      setCharacteristic(characteristic);
+        // Get the primary service
+        // Replace with your ESP32 service UUID
+        const service = await server.getPrimaryService('0000180d-0000-1000-8000-00805f9b34fb');
+
+        // Get the characteristic that provides the health data
+        // Replace with your ESP32 characteristic UUID
+        const characteristic = await service?.getCharacteristic('00002a37-0000-1000-8000-00805f9b34fb');
+        if (characteristic) {
+          setCharacteristic(characteristic);
+        }
+      }
 
       // Enable notifications
       await characteristic?.startNotifications();
@@ -115,9 +138,10 @@ export default function BluetoothConnection({ onDataReceived }: BluetoothConnect
         lastConnection: Date.now()
       });
 
+      // At this point, based on the flowchart, the ESP32 will display a message to put finger on sensor
       toast({
-        title: "Connected",
-        description: `Connected to ${device.name || 'ESP32 device'}`
+        title: "Ready for Reading",
+        description: "Please follow the instructions on your ESP32 device's screen"
       });
 
     } catch (error) {
@@ -142,8 +166,6 @@ export default function BluetoothConnection({ onDataReceived }: BluetoothConnect
     if (!value) return;
 
     // Parse the data from the ESP32
-    // This will depend on how your ESP32 sends the data
-    // For example, if it sends a JSON string:
     try {
       // Convert ArrayBuffer to string
       const decoder = new TextDecoder('utf-8');
@@ -152,21 +174,60 @@ export default function BluetoothConnection({ onDataReceived }: BluetoothConnect
       // Parse the JSON data
       const data = JSON.parse(dataString);
       
+      // Check if this is a calibration message
+      if (data.status === 'calibrating') {
+        if (!isCalibrating) {
+          setIsCalibrating(true);
+          if (onCalibrationStart) onCalibrationStart();
+          
+          toast({
+            title: "Calibrating",
+            description: "Device is calibrating. Please keep your finger on the sensor."
+          });
+        }
+        return;
+      }
+      
+      // Check if this is a calibration complete message
+      if (data.status === 'calibrated') {
+        setIsCalibrating(false);
+        if (onCalibrationEnd) onCalibrationEnd();
+        
+        toast({
+          title: "Calibration Complete",
+          description: "Device is ready to take measurements."
+        });
+        return;
+      }
+      
       // Process the health data (glucose, heart rate, SpO2)
       if (data && data.glucose !== undefined && data.heartRate !== undefined && data.spo2 !== undefined) {
-        // Create a new reading entry in Firebase
-        const newReadingRef = ref(database, `users/${userId}/readings/${Date.now()}`);
-        update(newReadingRef, {
+        // If we were calibrating, end calibration
+        if (isCalibrating) {
+          setIsCalibrating(false);
+          if (onCalibrationEnd) onCalibrationEnd();
+        }
+        
+        const healthData: HealthData = {
           glucose: data.glucose,
           heartRate: data.heartRate,
           spo2: data.spo2,
           timestamp: Date.now()
-        });
+        };
         
-        // Call the callback if provided
+        // Store the reading in Firebase
+        // Push creates a new entry with a unique key in the specified location
+        push(ref(database, `users/${userId}/readings`), healthData);
+        
+        // Call the callback if provided to update real-time display
         if (onDataReceived) {
-          onDataReceived(data);
+          onDataReceived(healthData);
         }
+        
+        toast({
+          title: "New Reading",
+          description: "Successfully received new health data"
+        });
       }
     } catch (error) {
       console.error('Error parsing data from ESP32:', error);
@@ -189,6 +250,7 @@ export default function BluetoothConnection({ onDataReceived }: BluetoothConnect
       });
       
       setIsConnected(false);
+      setIsCalibrating(false);
       setServer(null);
       setCharacteristic(null);
       
@@ -213,7 +275,11 @@ export default function BluetoothConnection({ onDataReceived }: BluetoothConnect
       <div className="flex items-center space-x-2">
         <div className={`h-3 w-3 rounded-full ${isConnected ? 'bg-success animate-pulse' : 'bg-destructive'}`}></div>
         <span className="text-sm text-muted-foreground">
-          {isConnected ? "Connected to ESP32 device" : "Not connected to any device"}
+          {isConnected 
+            ? isCalibrating 
+              ? "Connected - Device is calibrating..." 
+              : "Connected to ESP32 device" 
+            : "Not connected to any device"}
         </span>
       </div>
       
@@ -246,7 +312,9 @@ export default function BluetoothConnection({ onDataReceived }: BluetoothConnect
       {isConnected && (
         <div className="mt-4">
           <p className="text-xs text-muted-foreground">
-            ESP32 device will prompt you to place your finger on the sensor. Data will be automatically collected and stored in your account.
+            {isCalibrating 
+              ? "Device is calibrating. This may take a moment..." 
+              : "Follow the instructions on your ESP32 device. Place your finger on the sensor when prompted."}
           </p>
         </div>
       )}
