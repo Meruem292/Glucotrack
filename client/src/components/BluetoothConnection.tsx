@@ -68,17 +68,21 @@ export default function BluetoothConnection({
 
       toast({
         title: "Connecting",
-        description: "Please select your ESP32 device from the list"
+        description: "Please select any Bluetooth device from the list"
       });
 
-      // Request the device with a specific service UUID used by ESP32
-      // Note: You'll need to replace this with your actual ESP32 service UUID
+      // Request the device with more flexible options to improve discovery
+      // This will allow the user to select any Bluetooth device
       const device = await navigator.bluetooth.requestDevice({
-        filters: [
-          { namePrefix: 'ESP32' }
-        ],
-        // These are example UUIDs - replace with the actual UUIDs your ESP32 device uses
-        optionalServices: ['0000180d-0000-1000-8000-00805f9b34fb'] 
+        // Use acceptAllDevices to show all Bluetooth devices for testing
+        acceptAllDevices: true,
+        // Include common health monitoring services that might be used 
+        optionalServices: [
+          '0000180d-0000-1000-8000-00805f9b34fb', // Heart Rate service
+          '00001808-0000-1000-8000-00805f9b34fb', // Glucose service
+          '00001809-0000-1000-8000-00805f9b34fb', // Health Thermometer
+          '0000180a-0000-1000-8000-00805f9b34fb'  // Device Information
+        ]
       });
 
       setDevice(device);
@@ -102,47 +106,124 @@ export default function BluetoothConnection({
         });
       });
 
-      // Connect to GATT server
-      const server = await device.gatt?.connect();
-      if (server) {
+      try {
+        // Connect to GATT server
+        const server = await device.gatt?.connect();
+        if (!server) {
+          throw new Error("Failed to connect to GATT server");
+        }
+        
         setServer(server);
 
         toast({
           title: "Connected",
-          description: `Connected to ${device.name || 'ESP32 device'}`
+          description: `Connected to ${device.name || 'Bluetooth device'}`
         });
 
-        // Get the primary service
-        // Replace with your ESP32 service UUID
-        const service = await server.getPrimaryService('0000180d-0000-1000-8000-00805f9b34fb');
-
-        // Get the characteristic that provides the health data
-        // Replace with your ESP32 characteristic UUID
-        const characteristic = await service?.getCharacteristic('00002a37-0000-1000-8000-00805f9b34fb');
-        if (characteristic) {
-          setCharacteristic(characteristic);
+        // Get available services (for testing purposes)
+        const services = await server.getPrimaryServices();
+        console.log("Available services:", services.map(s => s.uuid));
+        
+        let service;
+        let characteristic;
+        
+        // Try to find the heart rate service first
+        try {
+          service = await server.getPrimaryService('0000180d-0000-1000-8000-00805f9b34fb'); // Heart Rate service
+          const characteristics = await service.getCharacteristics();
+          console.log("Available characteristics:", characteristics.map(c => c.uuid));
+          
+          // Try to get the heart rate measurement characteristic
+          characteristic = await service.getCharacteristic('00002a37-0000-1000-8000-00805f9b34fb');
+        } catch (serviceError) {
+          console.log("Heart rate service not found, looking for other services...");
+          
+          // Look for other health-related services if heart rate isn't available
+          for (const serviceUuid of [
+            '00001808-0000-1000-8000-00805f9b34fb', // Glucose
+            '00001809-0000-1000-8000-00805f9b34fb', // Health Thermometer
+            '0000180a-0000-1000-8000-00805f9b34fb'  // Device Information
+          ]) {
+            try {
+              service = await server.getPrimaryService(serviceUuid);
+              if (service) {
+                // If we found a service, try to get all its characteristics
+                const characteristics = await service.getCharacteristics();
+                if (characteristics.length > 0) {
+                  // Use the first characteristic that supports notifications
+                  for (const c of characteristics) {
+                    if (c.properties.notify) {
+                      characteristic = c;
+                      break;
+                    }
+                  }
+                  if (!characteristic && characteristics.length > 0) {
+                    // If no notify-supporting characteristics found, use the first one
+                    characteristic = characteristics[0];
+                  }
+                  break;
+                }
+              }
+            } catch (err) {
+              console.log(`Service ${serviceUuid} not found.`);
+            }
+          }
         }
+        
+        if (!service || !characteristic) {
+          throw new Error("No compatible health services found on this device");
+        }
+        
+        setCharacteristic(characteristic);
+
+        // If the characteristic supports notifications, enable them
+        if (characteristic.properties.notify) {
+          // Enable notifications
+          await characteristic.startNotifications();
+          
+          // Listen for changes in the characteristic value
+          characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
+        } else {
+          // If notifications aren't supported, we'll need to poll for changes
+          toast({
+            variant: "destructive",
+            title: "Limited Functionality",
+            description: "This device doesn't support continuous monitoring. Values will need to be read manually."
+          });
+        }
+
+        setIsConnected(true);
+
+        // Update the connection status in Firebase
+        update(ref(database, `users/${userId}/profile`), {
+          bluetoothConnected: true,
+          lastConnection: Date.now()
+        });
+
+        // At this point, the device is connected and we're ready to receive data
+        toast({
+          title: "Ready for Reading",
+          description: "Device connected successfully. Waiting for data..."
+        });
+      } catch (error) {
+        const connectionError = error as Error;
+        console.error("Connection error details:", connectionError);
+        toast({
+          variant: "destructive",
+          title: "Connection Error",
+          description: connectionError.message || "Failed to connect to the device properly. Please try another device."
+        });
+        
+        // Clean up if connection failed
+        if (device && device.gatt?.connected) {
+          await device.gatt.disconnect();
+        }
+        setIsConnected(false);
+        setServer(null);
+        setCharacteristic(null);
+        
+        throw connectionError; // Re-throw to be caught by the outer catch block
       }
-
-      // Enable notifications
-      await characteristic?.startNotifications();
-
-      // Listen for changes in the characteristic value
-      characteristic?.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
-
-      setIsConnected(true);
-
-      // Update the connection status in Firebase
-      update(ref(database, `users/${userId}/profile`), {
-        bluetoothConnected: true,
-        lastConnection: Date.now()
-      });
-
-      // At this point, based on the flowchart, the ESP32 will display a message to put finger on sensor
-      toast({
-        title: "Ready for Reading",
-        description: "Please follow the instructions on your ESP32 device's screen"
-      });
 
     } catch (error) {
       console.error('Error connecting to Bluetooth device:', error);
@@ -270,7 +351,7 @@ export default function BluetoothConnection({
 
   return (
     <div className="mb-6 rounded-xl bg-secondary p-4">
-      <h3 className="mb-4 font-medium">ESP32 Bluetooth Connection</h3>
+      <h3 className="mb-4 font-medium">Bluetooth Device Connection</h3>
       
       <div className="flex items-center space-x-2">
         <div className={`h-3 w-3 rounded-full ${isConnected ? 'bg-success animate-pulse' : 'bg-destructive'}`}></div>
@@ -278,7 +359,7 @@ export default function BluetoothConnection({
           {isConnected 
             ? isCalibrating 
               ? "Connected - Device is calibrating..." 
-              : "Connected to ESP32 device" 
+              : "Connected to Bluetooth device" 
             : "Not connected to any device"}
         </span>
       </div>
@@ -296,7 +377,7 @@ export default function BluetoothConnection({
                 Connecting...
               </span>
             ) : (
-              "Connect to ESP32"
+              "Connect to Device"
             )}
           </button>
         ) : (
@@ -314,7 +395,7 @@ export default function BluetoothConnection({
           <p className="text-xs text-muted-foreground">
             {isCalibrating 
               ? "Device is calibrating. This may take a moment..." 
-              : "Follow the instructions on your ESP32 device. Place your finger on the sensor when prompted."}
+              : "Device is connected. Follow instructions or interact with the device to receive health data."}
           </p>
         </div>
       )}
