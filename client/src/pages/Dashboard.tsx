@@ -12,9 +12,17 @@ import { formatDate } from "@/lib/utils";
 import wholeGrainImg from "../assets/images/whole-grain.svg";
 import leafyGreensImg from "../assets/images/leafy-greens.svg";
 import fattyFishImg from "../assets/images/fatty-fish.svg";
+import carbsImg from "../assets/images/carbs.svg";
+import fruitImg from "../assets/images/fruit.svg";
+import honeyImg from "../assets/images/honey.svg";
+import proteinImg from "../assets/images/protein.svg";
+import waterImg from "../assets/images/water.svg";
 import walkingImg from "../assets/images/walking.svg";
 import cyclingImg from "../assets/images/cycling.svg";
 import yogaImg from "../assets/images/yoga.svg";
+import restImg from "../assets/images/rest.svg";
+import stretchingImg from "../assets/images/stretching.svg";
+import swimmingImg from "../assets/images/swimming.svg";
 
 interface Reading {
   glucose: number;
@@ -128,17 +136,20 @@ export default function Dashboard() {
         {
           name: "Fast-acting Carbs",
           description: "Glucose tablets or juice",
-          icon: "ri-cup-line"
+          icon: "ri-cup-line",
+          imageUrl: carbsImg
         },
         {
           name: "Fruit",
           description: "Banana or apple",
-          icon: "ri-apple-line"
+          icon: "ri-apple-line",
+          imageUrl: fruitImg
         },
         {
           name: "Honey",
           description: "Natural sugar source",
-          icon: "ri-drop-line"
+          icon: "ri-drop-line",
+          imageUrl: honeyImg
         }
       ];
       
@@ -146,17 +157,20 @@ export default function Dashboard() {
         {
           name: "Rest",
           description: "Until glucose normalizes",
-          icon: "ri-rest-time-line"
+          icon: "ri-rest-time-line",
+          imageUrl: restImg
         },
         {
           name: "Light Walking",
           description: "5-10 minutes",
-          icon: "ri-walk-line"
+          icon: "ri-walk-line",
+          imageUrl: walkingImg
         },
         {
           name: "Gentle Stretching",
           description: "5 minutes",
-          icon: "ri-walk-line"
+          icon: "ri-walk-line",
+          imageUrl: stretchingImg
         }
       ];
     } else if (reading.glucose > 180) {
@@ -165,17 +179,20 @@ export default function Dashboard() {
         {
           name: "Leafy Greens",
           description: "Low carb vegetables",
-          icon: "ri-plant-line"
+          icon: "ri-plant-line",
+          imageUrl: leafyGreensImg
         },
         {
           name: "Lean Protein",
           description: "Chicken or fish",
-          icon: "ri-meat-line"
+          icon: "ri-meat-line",
+          imageUrl: proteinImg
         },
         {
           name: "Water",
           description: "Stay hydrated",
-          icon: "ri-drop-line"
+          icon: "ri-drop-line",
+          imageUrl: waterImg
         }
       ];
       
@@ -183,17 +200,20 @@ export default function Dashboard() {
         {
           name: "Brisk Walking",
           description: "30 minutes",
-          icon: "ri-walk-line"
+          icon: "ri-walk-line",
+          imageUrl: walkingImg
         },
         {
           name: "Swimming",
           description: "20 minutes",
-          icon: "ri-swim-line"
+          icon: "ri-swim-line",
+          imageUrl: swimmingImg
         },
         {
           name: "Cycling",
           description: "15 minutes",
-          icon: "ri-riding-line"
+          icon: "ri-riding-line",
+          imageUrl: cyclingImg
         }
       ];
     } else {
@@ -203,19 +223,19 @@ export default function Dashboard() {
           name: "Whole Grain Foods",
           description: "Low glycemic index",
           icon: "ri-bread-line",
-          imageUrl: "/placeholder-food-1.jpg"
+          imageUrl: wholeGrainImg
         },
         {
           name: "Leafy Greens",
           description: "Rich in minerals",
           icon: "ri-plant-line",
-          imageUrl: "/placeholder-food-2.jpg"
+          imageUrl: leafyGreensImg
         },
         {
           name: "Fatty Fish",
           description: "Omega-3 fatty acids",
           icon: "ri-fish-line",
-          imageUrl: "/placeholder-food-3.jpg"
+          imageUrl: fattyFishImg
         }
       ];
       
@@ -224,19 +244,19 @@ export default function Dashboard() {
           name: "Brisk Walking",
           description: "30 minutes",
           icon: "ri-walk-line",
-          imageUrl: "/placeholder-workout-1.jpg"
+          imageUrl: walkingImg
         },
         {
           name: "Cycling",
           description: "20 minutes",
           icon: "ri-riding-line",
-          imageUrl: "/placeholder-workout-2.jpg"
+          imageUrl: cyclingImg
         },
         {
           name: "Light Yoga",
           description: "15 minutes",
           icon: "ri-heart-line",
-          imageUrl: "/placeholder-workout-3.jpg"
+          imageUrl: yogaImg
         }
       ];
     }
