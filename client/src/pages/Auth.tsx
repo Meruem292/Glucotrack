@@ -23,7 +23,6 @@ export default function Auth() {
   const [fullName, setFullName] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
-  const [deviceId, setDeviceId] = useState("");
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +66,7 @@ export default function Auth() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!fullName || !signupEmail || !signupPassword || !deviceId) {
+    if (!fullName || !signupEmail || !signupPassword) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -99,7 +98,8 @@ export default function Auth() {
       
       // Save additional user data to Firebase Realtime Database
       await set(ref(database, `users/${user.uid}/profile`), {
-        deviceId: deviceId,
+        bluetoothConnected: false,
+        lastConnection: null,
         health: {
           age: 0,
           weight: 0,
@@ -263,19 +263,7 @@ export default function Auth() {
                   required
                 />
               </div>
-              <div>
-                <label htmlFor="device-id" className="mb-1 block text-sm font-medium text-white/70">Arduino Device ID</label>
-                <input 
-                  type="text" 
-                  id="device-id" 
-                  placeholder="e.g. GT-12345" 
-                  className="w-full rounded-lg border border-white/10 bg-[#1a1a1a]/60 px-4 py-3 text-white focus:outline-none focus:ring-1 focus:ring-[#2e67d3]" 
-                  value={deviceId}
-                  onChange={(e) => setDeviceId(e.target.value)}
-                  required
-                />
-                <p className="mt-1 text-xs text-white/50">Enter the ID found on your Arduino device</p>
-              </div>
+
               <div className="pt-2">
                 <button 
                   type="submit" 

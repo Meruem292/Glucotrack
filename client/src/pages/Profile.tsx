@@ -3,11 +3,13 @@ import { auth, database } from "@/lib/firebase";
 import { ref, get, set, update } from "firebase/database";
 import { updateProfile } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
+import BluetoothConnection from "@/components/BluetoothConnection";
 
 interface UserProfile {
   name: string;
   email: string;
-  deviceId: string;
+  bluetoothConnected: boolean;
+  lastConnection: number | null;
   health: {
     age: number;
     weight: number;
@@ -21,7 +23,8 @@ export default function Profile() {
   const [profile, setProfile] = useState<UserProfile>({
     name: "",
     email: "",
-    deviceId: "",
+    bluetoothConnected: false,
+    lastConnection: null,
     health: {
       age: 0,
       weight: 0,
@@ -46,7 +49,8 @@ export default function Profile() {
           setProfile({
             name: user.displayName || "",
             email: user.email || "",
-            deviceId: profileData.deviceId || "",
+            bluetoothConnected: profileData.bluetoothConnected || false,
+            lastConnection: profileData.lastConnection || null,
             health: profileData.health || {
               age: 0,
               weight: 0,
@@ -58,7 +62,8 @@ export default function Profile() {
           setProfile({
             name: user.displayName || "",
             email: user.email || "",
-            deviceId: "",
+            bluetoothConnected: false,
+            lastConnection: null,
             health: {
               age: 0,
               weight: 0,
@@ -116,8 +121,7 @@ export default function Profile() {
       
       // Update profile in Firebase Realtime Database
       const userRef = ref(database, `users/${user.uid}/profile`);
-      await set(userRef, {
-        deviceId: profile.deviceId,
+      await update(userRef, {
         health: profile.health
       });
       
@@ -171,25 +175,28 @@ export default function Profile() {
     try {
       setLoading(true);
       
-      // Reset device connection in Firebase Realtime Database
-      const deviceRef = ref(database, `users/${user.uid}/profile/deviceId`);
-      await set(deviceRef, "");
+      // Reset bluetooth connection in Firebase Realtime Database
+      await update(ref(database, `users/${user.uid}/profile`), {
+        bluetoothConnected: false,
+        lastConnection: Date.now()
+      });
       
       setProfile(prev => ({
         ...prev,
-        deviceId: ""
+        bluetoothConnected: false,
+        lastConnection: Date.now()
       }));
       
       toast({
         title: "Success",
-        description: "Device connection reset successfully"
+        description: "Bluetooth connection reset successfully"
       });
     } catch (error) {
-      console.error("Error resetting device connection:", error);
+      console.error("Error resetting bluetooth connection:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to reset device connection"
+        description: "Failed to reset bluetooth connection"
       });
     } finally {
       setLoading(false);
@@ -251,15 +258,8 @@ export default function Profile() {
               </div>
               
               <div>
-                <label className="mb-1 block text-sm font-medium text-muted-foreground">Device ID</label>
-                <input 
-                  type="text" 
-                  name="deviceId"
-                  value={profile.deviceId} 
-                  onChange={handleChange}
-                  className="w-full rounded-lg border border-muted bg-muted px-4 py-3 text-foreground focus:outline-none focus:ring-1 focus:ring-accent"
-                />
-                <p className="mt-1 text-xs text-muted-foreground">Your Arduino device identifier</p>
+                <h5 className="mb-2 font-medium">ESP32 Connection Status</h5>
+                <BluetoothConnection />
               </div>
               
               <div className="pt-2">
@@ -342,14 +342,14 @@ export default function Profile() {
           <div className="border-t border-muted pt-6 mt-6">
             <h4 className="mb-4 font-medium text-destructive">Danger Zone</h4>
             <div className="rounded-lg bg-destructive/10 p-4">
-              <h5 className="mb-2 font-medium text-destructive">Reset Device Connection</h5>
-              <p className="mb-3 text-sm text-muted-foreground">This will disconnect your current Arduino device and require re-pairing.</p>
+              <h5 className="mb-2 font-medium text-destructive">Reset Bluetooth Connection</h5>
+              <p className="mb-3 text-sm text-muted-foreground">This will clear your Bluetooth connection status and require reconnecting to your ESP32 device.</p>
               <button 
                 type="button" 
                 className="rounded-lg bg-muted px-4 py-2 font-medium text-destructive transition duration-200 hover:bg-destructive/20"
                 onClick={handleResetConnection}
               >
-                Reset Connection
+                Reset Bluetooth
               </button>
             </div>
           </div>
