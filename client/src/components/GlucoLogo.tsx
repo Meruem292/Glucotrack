@@ -1,34 +1,44 @@
-import React from 'react';
+import React from "react";
 
 interface GlucoLogoProps {
   size?: number;
   className?: string;
 }
 
-export default function GlucoLogo({ size = 80, className = '' }: GlucoLogoProps) {
+export default function GlucoLogo({ size = 40, className = "" }: GlucoLogoProps) {
   return (
-    <div className={`relative flex items-center justify-center ${className}`}>
-      <svg 
-        width={size} 
-        height={size} 
-        viewBox="0 0 100 100" 
-        fill="none" 
+    <div
+      className={`flex items-center justify-center rounded-full bg-black ${className}`}
+      style={{ width: `${size}px`, height: `${size}px` }}
+    >
+      <svg
+        width={size * 0.6}
+        height={size * 0.6}
+        viewBox="0 0 24 24"
+        fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <circle cx="50" cy="50" r="50" fill="#111827" />
-        <path 
-          d="M30 50C30 38.954 38.954 30 50 30C61.046 30 70 38.954 70 50C70 61.046 61.046 70 50 70"
-          stroke="white"
-          strokeWidth="4"
-          strokeLinecap="round"
-        />
-        <path 
-          d="M50 70C44.477 70 40 65.523 40 60C40 54.477 44.477 50 50 50C55.523 50 60 54.477 60 60"
+        <path
+          d="M18.3 6.5C18.3 11.75 12 17.1 12 17.1C12 17.1 5.7 11.75 5.7 6.5C5.7 4.01 8.07 2 12 2C15.93 2 18.3 4.01 18.3 6.5Z"
           stroke="#4285F4"
-          strokeWidth="4"
+          strokeWidth="2"
           strokeLinecap="round"
+          strokeLinejoin="round"
         />
-        <circle cx="60" cy="60" r="5" fill="#4285F4" />
+        <path
+          d="M12 22C10.343 22 9 20.657 9 19C9 17.343 10.343 16 12 16C13.657 16 15 17.343 15 19C15 20.657 13.657 22 12 22Z"
+          stroke="#4285F4"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M12 9C13.1046 9 14 8.10457 14 7C14 5.89543 13.1046 5 12 5C10.8954 5 10 5.89543 10 7C10 8.10457 10.8954 9 12 9Z"
+          stroke="#4285F4"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
     </div>
   );

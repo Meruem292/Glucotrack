@@ -92,13 +92,15 @@ export default function Profile() {
     
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
-      setProfile(prev => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent as keyof UserProfile],
-          [child]: value
-        }
-      }));
+      if (parent === 'health') {
+        setProfile(prev => ({
+          ...prev,
+          health: {
+            ...prev.health,
+            [child]: value
+          }
+        }));
+      }
     } else {
       setProfile(prev => ({
         ...prev,
