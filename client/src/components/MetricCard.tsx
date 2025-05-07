@@ -11,6 +11,35 @@ interface MetricCardProps {
 export default function MetricCard({ title, value, unit, icon, metricType }: MetricCardProps) {
   const { status, color } = getHealthStatus(metricType, value);
   
+  // Map color names to Tailwind classes
+  const getColorClasses = (colorName: string) => {
+    switch (colorName) {
+      case "success":
+        return {
+          bg: "bg-green-500/20",
+          text: "text-green-500"
+        };
+      case "warning":
+        return {
+          bg: "bg-yellow-500/20",
+          text: "text-yellow-500"
+        };
+      case "danger":
+        return {
+          bg: "bg-red-500/20",
+          text: "text-red-500"
+        };
+      case "muted":
+      default:
+        return {
+          bg: "bg-gray-500/20",
+          text: "text-gray-500"
+        };
+    }
+  };
+  
+  const colorClasses = getColorClasses(color);
+  
   return (
     <div className="relative overflow-hidden rounded-xl bg-secondary p-5">
       <div className="flex flex-col">
@@ -20,7 +49,7 @@ export default function MetricCard({ title, value, unit, icon, metricType }: Met
           <span className="ml-1 text-sm text-muted-foreground">{unit}</span>
         </div>
         <div className="mt-2 flex items-center">
-          <span className={`rounded-full bg-${color}/20 px-2 py-1 text-xs text-${color}`}>
+          <span className={`rounded-full ${colorClasses.bg} px-2 py-1 text-xs ${colorClasses.text}`}>
             {status}
           </span>
         </div>

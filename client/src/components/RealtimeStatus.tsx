@@ -8,12 +8,16 @@ interface HealthData {
 }
 
 interface RealtimeStatusProps {
-  data: HealthData;
+  data?: HealthData;
   isCalibrating?: boolean;
   isConnected: boolean;
 }
 
-export default function RealtimeStatus({ data, isCalibrating = false, isConnected }: RealtimeStatusProps) {
+export default function RealtimeStatus({ 
+  data = { glucose: null, heartRate: null, spo2: null, timestamp: null }, 
+  isCalibrating = false, 
+  isConnected 
+}: RealtimeStatusProps) {
   const [statusMessage, setStatusMessage] = useState<string>('Connect your ESP32 device to start monitoring');
 
   useEffect(() => {
