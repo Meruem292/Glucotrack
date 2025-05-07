@@ -24,6 +24,7 @@ export default function BluetoothConnection({
   const [isConnecting, setIsConnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [isCalibrating, setIsCalibrating] = useState(false);
+  const [isDemoMode, setIsDemoMode] = useState(false);
   const [device, setDevice] = useState<BluetoothDevice | null>(null);
   const [server, setServer] = useState<BluetoothRemoteGATTServer | null>(null);
   const [characteristic, setCharacteristic] = useState<BluetoothRemoteGATTCharacteristic | null>(null);
@@ -67,8 +68,8 @@ export default function BluetoothConnection({
       }
 
       toast({
-        title: "Connecting",
-        description: "Please select any Bluetooth device from the list"
+        title: "Searching for Devices",
+        description: "Looking for compatible health devices nearby. Note: Only devices advertising Bluetooth health services will appear."
       });
 
       // Request the device with more flexible options to improve discovery
@@ -319,6 +320,25 @@ export default function BluetoothConnection({
     const userId = auth.currentUser?.uid;
     if (!userId) return;
 
+    // If in demo mode, just clean up the demo
+    if (isDemoMode) {
+      setIsDemoMode(false);
+      setIsConnected(false);
+      
+      // Update Firebase status
+      update(ref(database, `users/${userId}/profile`), {
+        bluetoothConnected: false,
+        lastConnection: Date.now()
+      });
+      
+      toast({
+        title: "Demo Mode Ended",
+        description: "Disconnected from demo mode"
+      });
+      return;
+    }
+
+    // Normal Bluetooth disconnect
     try {
       if (device && device.gatt?.connected) {
         await device.gatt.disconnect();
@@ -348,10 +368,98 @@ export default function BluetoothConnection({
       });
     }
   };
+  
+  // Function to start demo mode for testing without a real device
+  const startDemoMode = () => {
+    const userId = auth.currentUser?.uid;
+    if (!userId) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "You must be logged in to use demo mode"
+      });
+      return;
+    }
+    
+    setIsDemoMode(true);
+    setIsConnected(true);
+    
+    // Update Firebase status
+    update(ref(database, `users/${userId}/profile`), {
+      bluetoothConnected: true,
+      lastConnection: Date.now()
+    });
+    
+    toast({
+      title: "Demo Mode Activated",
+      description: "Using simulated data for testing"
+    });
+    
+    // Simulate calibration process
+    setIsCalibrating(true);
+    if (onCalibrationStart) onCalibrationStart();
+    
+    // Simulate calibration completion after 3 seconds
+    setTimeout(() => {
+      setIsCalibrating(false);
+      if (onCalibrationEnd) onCalibrationEnd();
+      
+      // Start sending demo data
+      sendDemoData(userId);
+    }, 3000);
+  };
+  
+  // Generate and send demo health data
+  const sendDemoData = (userId: string) => {
+    // Don't continue if demo mode has been disabled
+    if (!isDemoMode) return;
+    
+    // Generate reasonable random values
+    const glucose = Math.floor(80 + Math.random() * 60); // 80-140 range
+    const heartRate = Math.floor(60 + Math.random() * 40); // 60-100 range
+    const spo2 = Math.floor(95 + Math.random() * 5); // 95-100 range
+    
+    const healthData: HealthData = {
+      glucose,
+      heartRate,
+      spo2,
+      timestamp: Date.now()
+    };
+    
+    // Save to Firebase
+    push(ref(database, `users/${userId}/readings`), healthData);
+    
+    // Update real-time display
+    if (onDataReceived) {
+      onDataReceived(healthData);
+    }
+    
+    // Send a notification every 5th reading
+    if (Math.random() > 0.8) {
+      toast({
+        title: "New Demo Reading",
+        description: `Glucose: ${glucose} mg/dL, Heart: ${heartRate} BPM, SpO2: ${spo2}%`
+      });
+    }
+    
+    // Schedule next data point if still in demo mode
+    if (isDemoMode) {
+      // Send new data every 3-5 seconds
+      const nextDelay = 3000 + Math.random() * 2000;
+      setTimeout(() => sendDemoData(userId), nextDelay);
+    }
+  };
 
   return (
     <div className="mb-6 rounded-xl bg-secondary p-4">
-      <h3 className="mb-4 font-medium">Bluetooth Device Connection</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-medium">Bluetooth Device Connection</h3>
+        {isDemoMode && (
+          <span className="inline-block px-2 py-1 text-xs font-medium bg-orange-600 rounded-md text-white">
+            Demo Mode
+          </span>
+        )}
+      </div>
       
       <div className="flex items-center space-x-2">
         <div className={`h-3 w-3 rounded-full ${isConnected ? 'bg-success animate-pulse' : 'bg-destructive'}`}></div>
@@ -359,33 +467,46 @@ export default function BluetoothConnection({
           {isConnected 
             ? isCalibrating 
               ? "Connected - Device is calibrating..." 
-              : "Connected to Bluetooth device" 
+              : isDemoMode ? "Connected to Demo Device (Simulated)" : "Connected to Bluetooth device" 
             : "Not connected to any device"}
         </span>
       </div>
       
-      <div className="mt-4">
+      <div className="mt-2 rounded-md bg-blue-900/30 p-2 text-xs text-blue-200">
+        <p><strong>Note:</strong> Web Bluetooth can only connect to special health devices that advertise specific services. Most phones and regular Bluetooth devices won't appear in the device list.</p>
+      </div>
+      
+      <div className="mt-4 flex gap-2 flex-wrap">
         {!isConnected ? (
-          <button
-            onClick={connectToDevice}
-            disabled={isConnecting}
-            className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-600 disabled:opacity-50"
-          >
-            {isConnecting ? (
-              <span className="flex items-center">
-                <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
-                Connecting...
-              </span>
-            ) : (
-              "Connect to Device"
-            )}
-          </button>
+          <>
+            <button
+              onClick={connectToDevice}
+              disabled={isConnecting}
+              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-600 disabled:opacity-50"
+            >
+              {isConnecting ? (
+                <span className="flex items-center">
+                  <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                  Connecting...
+                </span>
+              ) : (
+                "Connect to Device"
+              )}
+            </button>
+            
+            <button
+              onClick={startDemoMode}
+              className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-orange-700"
+            >
+              Try Demo Mode
+            </button>
+          </>
         ) : (
           <button
             onClick={disconnectDevice}
             className="rounded-lg bg-destructive px-4 py-2 text-sm font-medium text-white transition hover:bg-destructive/80"
           >
-            Disconnect
+            {isDemoMode ? "Stop Demo" : "Disconnect"}
           </button>
         )}
       </div>
@@ -395,7 +516,9 @@ export default function BluetoothConnection({
           <p className="text-xs text-muted-foreground">
             {isCalibrating 
               ? "Device is calibrating. This may take a moment..." 
-              : "Device is connected. Follow instructions or interact with the device to receive health data."}
+              : isDemoMode 
+                ? "Demo mode is active. Simulated health data will be generated automatically." 
+                : "Device is connected. Follow instructions or interact with the device to receive health data."}
           </p>
         </div>
       )}
