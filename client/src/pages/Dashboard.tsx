@@ -26,12 +26,14 @@ interface FoodRecommendation {
   name: string;
   description: string;
   icon: string;
+  imageUrl?: string;
 }
 
 interface WorkoutRecommendation {
   name: string;
   description: string;
   icon: string;
+  imageUrl?: string;
 }
 
 export default function Dashboard() {
@@ -192,17 +194,20 @@ export default function Dashboard() {
         {
           name: "Whole Grain Foods",
           description: "Low glycemic index",
-          icon: "ri-bread-line"
+          icon: "ri-bread-line",
+          imageUrl: "/placeholder-food-1.jpg"
         },
         {
           name: "Leafy Greens",
           description: "Rich in minerals",
-          icon: "ri-plant-line"
+          icon: "ri-plant-line",
+          imageUrl: "/placeholder-food-2.jpg"
         },
         {
           name: "Fatty Fish",
           description: "Omega-3 fatty acids",
-          icon: "ri-fish-line"
+          icon: "ri-fish-line",
+          imageUrl: "/placeholder-food-3.jpg"
         }
       ];
       
@@ -210,17 +215,20 @@ export default function Dashboard() {
         {
           name: "Brisk Walking",
           description: "30 minutes",
-          icon: "ri-walk-line"
+          icon: "ri-walk-line",
+          imageUrl: "/placeholder-workout-1.jpg"
         },
         {
           name: "Cycling",
           description: "20 minutes",
-          icon: "ri-riding-line"
+          icon: "ri-riding-line",
+          imageUrl: "/placeholder-workout-2.jpg"
         },
         {
           name: "Light Yoga",
           description: "15 minutes",
-          icon: "ri-heart-line"
+          icon: "ri-heart-line",
+          imageUrl: "/placeholder-workout-3.jpg"
         }
       ];
     }
