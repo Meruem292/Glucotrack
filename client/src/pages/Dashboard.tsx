@@ -8,6 +8,14 @@ import WorkoutRecommendationCard from "@/components/WorkoutRecommendationCard";
 import BluetoothConnection from "@/components/BluetoothConnection";
 import { formatDate } from "@/lib/utils";
 
+// Import SVG images
+import wholeGrainImg from "../assets/images/whole-grain.svg";
+import leafyGreensImg from "../assets/images/leafy-greens.svg";
+import fattyFishImg from "../assets/images/fatty-fish.svg";
+import walkingImg from "../assets/images/walking.svg";
+import cyclingImg from "../assets/images/cycling.svg";
+import yogaImg from "../assets/images/yoga.svg";
+
 interface Reading {
   glucose: number;
   heartRate: number;
@@ -316,7 +324,8 @@ export default function Dashboard() {
                 key={index} 
                 name={food.name} 
                 description={food.description} 
-                icon={food.icon} 
+                icon={food.icon}
+                imageUrl={food.imageUrl}
               />
             ))}
           </div>
@@ -329,7 +338,8 @@ export default function Dashboard() {
                 key={index} 
                 name={workout.name} 
                 description={workout.description} 
-                icon={workout.icon} 
+                icon={workout.icon}
+                imageUrl={workout.imageUrl}
               />
             ))}
           </div>
