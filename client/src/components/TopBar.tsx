@@ -39,10 +39,13 @@ export default function TopBar({ user }: TopBarProps) {
             {user?.displayName || "User"}
           </span>
           <button 
-            className="rounded-full p-2 text-muted-foreground hover:bg-muted" 
+            className="rounded-lg bg-blue-600 px-3 py-1 text-sm font-medium text-white transition hover:bg-blue-700" 
             onClick={handleLogout}
           >
-            <i className="ri-logout-box-r-line"></i>
+            <span className="flex items-center space-x-1">
+              <i className="ri-logout-box-r-line"></i>
+              <span>Logout</span>
+            </span>
           </button>
         </div>
       </div>
