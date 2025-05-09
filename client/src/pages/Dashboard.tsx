@@ -5,7 +5,7 @@ import MetricCard from "@/components/MetricCard";
 import RealtimeStatus from "@/components/RealtimeStatus";
 import FoodRecommendationCard from "@/components/FoodRecommendationCard";
 import WorkoutRecommendationCard from "@/components/WorkoutRecommendationCard";
-import BluetoothConnection from "@/components/BluetoothConnection";
+import TokenInput from "@/components/TokenInput";
 import { formatDate } from "@/lib/utils";
 
 // Import SVG images
@@ -69,8 +69,8 @@ export default function Dashboard() {
     const userId = auth.currentUser?.uid;
     if (!userId) return;
 
-    // Check bluetooth connection status
-    const connectionRef = ref(database, `users/${userId}/profile/bluetoothConnected`);
+    // Check device connection status
+    const connectionRef = ref(database, `users/${userId}/profile/deviceConnected`);
     const connectionUnsubscribe = onValue(connectionRef, (snapshot) => {
       setIsConnected(Boolean(snapshot.val()));
     });
@@ -294,16 +294,14 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Bluetooth Connection */}
+      {/* Device Connection */}
       <div className="mb-8 overflow-hidden rounded-xl bg-secondary">
         <div className="bg-muted px-4 py-3">
           <h3 className="font-medium">Device Connection</h3>
         </div>
         <div className="p-4">
-          <BluetoothConnection
-            onDataReceived={handleDataReceived}
-            onCalibrationStart={handleCalibrationStart}
-            onCalibrationEnd={handleCalibrationEnd}
+          <TokenInput
+            onConnectionStatusChange={setIsConnected}
           />
         </div>
       </div>
@@ -315,15 +313,11 @@ export default function Dashboard() {
         </div>
         <div className="p-4">
           <RealtimeStatus 
-            data={realtimeData}
             isConnected={isConnected}
-            isCalibrating={isCalibrating}
           />
           <div className="text-sm text-muted-foreground">
             Last update: <span>{
-              realtimeData.timestamp ? 
-                formatDate(new Date(realtimeData.timestamp)) : 
-                (latestReading ? formatDate(new Date(latestReading.timestamp)) : "No data")
+              latestReading ? formatDate(new Date(latestReading.timestamp)) : "No data"
             }</span>
           </div>
         </div>
