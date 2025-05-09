@@ -4,7 +4,7 @@
 
 :root {
   /* Darker background as seen in the image */
-  --background: 220 40% 8%;
+  --background: 255 40% 8%;
   --foreground: 210 40% 98%;
 
   /* Slightly lighter for component backgrounds */
@@ -24,7 +24,7 @@
   --input: 220 25% 15%;
 
   /* Blue accent color from image */
-  --primary: 217 75% 50%;
+  --primary: 255 75% 100%;
   --primary-foreground: 0 0% 100%;
 
   /* Secondary elements - slightly lighter than background */
@@ -76,7 +76,7 @@
   }
 
   .auth-bg {
-    background-color: #4285F4;
+    background-color: #001435;
     background-image: linear-gradient(135deg, #4285F4 0%, #2a63d4 100%);
     min-height: 100vh;
     height: 100%;
