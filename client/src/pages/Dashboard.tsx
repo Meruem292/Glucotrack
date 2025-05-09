@@ -6,6 +6,7 @@ import RealtimeStatus from "@/components/RealtimeStatus";
 import FoodRecommendationCard from "@/components/FoodRecommendationCard";
 import WorkoutRecommendationCard from "@/components/WorkoutRecommendationCard";
 import TokenInput from "@/components/TokenInput";
+import HealthTipsGenerator from "@/components/HealthTipsGenerator";
 import { formatDate } from "@/lib/utils";
 
 // Import SVG images
@@ -50,6 +51,12 @@ export default function Dashboard() {
   const [isConnected, setIsConnected] = useState(false);
   const [foodRecommendations, setFoodRecommendations] = useState<FoodRecommendation[]>([]);
   const [workoutRecommendations, setWorkoutRecommendations] = useState<WorkoutRecommendation[]>([]);
+  const [userHealth, setUserHealth] = useState({
+    age: 0,
+    weight: 0,
+    height: 0,
+    condition: ""
+  });
 
   useEffect(() => {
     const userId = auth.currentUser?.uid;
@@ -59,6 +66,20 @@ export default function Dashboard() {
     const connectionRef = ref(database, `users/${userId}/profile/deviceConnected`);
     const connectionUnsubscribe = onValue(connectionRef, (snapshot) => {
       setIsConnected(Boolean(snapshot.val()));
+    });
+
+    // Fetch user health profile
+    const healthRef = ref(database, `users/${userId}/health`);
+    const healthUnsubscribe = onValue(healthRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        setUserHealth({
+          age: data.age || 0,
+          weight: data.weight || 0,
+          height: data.height || 0,
+          condition: data.condition || ""
+        });
+      }
     });
 
     // Listen to latest reading
@@ -83,6 +104,7 @@ export default function Dashboard() {
 
     return () => {
       connectionUnsubscribe();
+      healthUnsubscribe();
       readingsUnsubscribe();
     };
   }, []);
@@ -288,6 +310,19 @@ export default function Dashboard() {
             }</span>
           </div>
         </div>
+      </div>
+
+      {/* Health Tips Generator */}
+      <div className="mb-8">
+        <HealthTipsGenerator
+          glucose={latestReading?.glucose || null}
+          heartRate={latestReading?.heartRate || null}
+          spo2={latestReading?.spo2 || null}
+          userAge={userHealth.age}
+          userWeight={userHealth.weight}
+          userHeight={userHealth.height}
+          userCondition={userHealth.condition}
+        />
       </div>
 
       {/* Recommendations Section */}

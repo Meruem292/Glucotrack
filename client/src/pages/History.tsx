@@ -5,13 +5,6 @@ import { formatDate, getHealthStatus } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-// Add AutoTable interface
-import { jsPDF as jsPDFWithAutoTable } from "jspdf";
-
-// Create interface with autoTable extension
-interface jsPDFWithAutoTableInterface extends jsPDFWithAutoTable {
-  autoTable: (options: any) => jsPDFWithAutoTable;
-}
 
 interface Reading {
   id: string;
@@ -70,8 +63,8 @@ export default function History() {
   const exportToPDF = () => {
     if (readings.length === 0) return;
     
-    // Initialize the PDF with our interface that has autoTable
-    const doc = new jsPDF() as jsPDFWithAutoTableInterface;
+    // Initialize the PDF document
+    const doc = new jsPDF();
     
     // Add title
     doc.setFontSize(18);
@@ -113,8 +106,8 @@ export default function History() {
       ];
     });
     
-    // Add the table using our typed method
-    doc.autoTable({
+    // Add the table
+    (doc as any).autoTable({
       head: [tableColumn],
       body: tableRows,
       startY: 55,
