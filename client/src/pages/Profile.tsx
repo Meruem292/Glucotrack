@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 import { auth, database } from "@/lib/firebase";
-import { ref, get, set, update } from "firebase/database";
+import { ref, get, set, update, query, orderByChild, limitToLast, onValue, off } from "firebase/database";
 import { updateProfile } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
-import BluetoothConnection from "@/components/BluetoothConnection";
+import { formatDate, getHealthStatus } from "@/lib/utils";
 
 interface UserProfile {
   name: string;
   email: string;
-  bluetoothConnected: boolean;
+  deviceConnected: boolean;
   lastConnection: number | null;
+  token: string;
   health: {
     age: number;
     weight: number;
@@ -18,13 +19,21 @@ interface UserProfile {
   };
 }
 
+interface Reading {
+  glucose: number;
+  heartRate: number;
+  spo2: number;
+  timestamp: number;
+}
+
 export default function Profile() {
   const { toast } = useToast();
   const [profile, setProfile] = useState<UserProfile>({
     name: "",
     email: "",
-    bluetoothConnected: false,
+    deviceConnected: false,
     lastConnection: null,
+    token: "",
     health: {
       age: 0,
       weight: 0,
@@ -32,6 +41,7 @@ export default function Profile() {
       condition: "None"
     }
   });
+  const [recentReadings, setRecentReadings] = useState<Reading[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -49,8 +59,9 @@ export default function Profile() {
           setProfile({
             name: user.displayName || "",
             email: user.email || "",
-            bluetoothConnected: profileData.bluetoothConnected || false,
+            deviceConnected: profileData.deviceConnected || false,
             lastConnection: profileData.lastConnection || null,
+            token: profileData.token || "",
             health: profileData.health || {
               age: 0,
               weight: 0,
@@ -62,8 +73,9 @@ export default function Profile() {
           setProfile({
             name: user.displayName || "",
             email: user.email || "",
-            bluetoothConnected: false,
+            deviceConnected: false,
             lastConnection: null,
+            token: "",
             health: {
               age: 0,
               weight: 0,
@@ -72,6 +84,24 @@ export default function Profile() {
             }
           });
         }
+
+        // Fetch recent readings
+        const readingsRef = query(
+          ref(database, `users/${user.uid}/readings`),
+          orderByChild('timestamp'),
+          limitToLast(5)
+        );
+        
+        onValue(readingsRef, (readingSnapshot) => {
+          const data = readingSnapshot.val();
+          if (data) {
+            const readingsArray = Object.values(data) as Reading[];
+            // Sort by timestamp (newest first)
+            const sortedReadings = readingsArray.sort((a, b) => b.timestamp - a.timestamp);
+            setRecentReadings(sortedReadings);
+          }
+        });
+        
       } catch (error) {
         console.error("Error fetching profile:", error);
         toast({
@@ -85,6 +115,16 @@ export default function Profile() {
     };
 
     fetchProfile();
+    
+    // Cleanup subscription when component unmounts
+    return () => {
+      const user = auth.currentUser;
+      if (user) {
+        const readingsRef = ref(database, `users/${user.uid}/readings`);
+        // Turn off the listener
+        off(readingsRef);
+      }
+    };
   }, [toast]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -177,28 +217,28 @@ export default function Profile() {
     try {
       setLoading(true);
       
-      // Reset bluetooth connection in Firebase Realtime Database
+      // Reset device connection in Firebase Realtime Database
       await update(ref(database, `users/${user.uid}/profile`), {
-        bluetoothConnected: false,
+        deviceConnected: false,
         lastConnection: Date.now()
       });
       
       setProfile(prev => ({
         ...prev,
-        bluetoothConnected: false,
+        deviceConnected: false,
         lastConnection: Date.now()
       }));
       
       toast({
         title: "Success",
-        description: "Bluetooth connection reset successfully"
+        description: "Device connection reset successfully"
       });
     } catch (error) {
-      console.error("Error resetting bluetooth connection:", error);
+      console.error("Error resetting device connection:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to reset bluetooth connection"
+        description: "Failed to reset device connection"
       });
     } finally {
       setLoading(false);
@@ -260,8 +300,33 @@ export default function Profile() {
               </div>
               
               <div>
-                <h5 className="mb-2 font-medium">ESP32 Connection Status</h5>
-                <BluetoothConnection />
+                <h5 className="mb-2 font-medium">Device Information</h5>
+                <div className="rounded-lg border border-muted bg-muted/50 p-4">
+                  <div className="mb-3 flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">User ID:</span>
+                    <code className="inline-block rounded bg-black/20 px-2 py-1 text-sm font-mono">
+                      {auth.currentUser?.uid?.substring(0, 10)}...
+                    </code>
+                  </div>
+                  <div className="mb-3 flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">Device Token:</span>
+                    <code className="inline-block rounded bg-black/20 px-2 py-1 text-sm font-mono">
+                      {profile.token || "No token"}
+                    </code>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">Connection Status:</span>
+                    <span className={`inline-flex items-center gap-1 rounded-full ${profile.deviceConnected ? 'bg-green-500/20 text-green-500' : 'bg-yellow-500/20 text-yellow-500'} px-2 py-0.5 text-xs font-medium`}>
+                      <span className={`h-2 w-2 rounded-full ${profile.deviceConnected ? 'bg-green-500' : 'bg-yellow-500'}`}></span>
+                      {profile.deviceConnected ? 'Connected' : 'Disconnected'}
+                    </span>
+                  </div>
+                  {profile.lastConnection && (
+                    <div className="mt-2 text-xs text-muted-foreground">
+                      Last connection: {formatDate(new Date(profile.lastConnection))}
+                    </div>
+                  )}
+                </div>
               </div>
               
               <div className="pt-2">
@@ -342,16 +407,61 @@ export default function Profile() {
           </div>
           
           <div className="border-t border-muted pt-6 mt-6">
+            <h4 className="mb-4 font-medium">Recent Readings</h4>
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead>
+                  <tr className="bg-muted">
+                    <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Date & Time</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Glucose (mg/dL)</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Heart Rate (BPM)</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">SpO2 (%)</th>
+                    <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-muted">
+                  {recentReadings.length > 0 ? (
+                    recentReadings.map((reading, index) => {
+                      const status = getHealthStatus("glucose", reading.glucose);
+                      return (
+                        <tr key={index} className="hover:bg-muted/50">
+                          <td className="px-4 py-2 text-xs text-muted-foreground">
+                            {formatDate(new Date(reading.timestamp))}
+                          </td>
+                          <td className="px-4 py-2 text-xs text-foreground">{reading.glucose}</td>
+                          <td className="px-4 py-2 text-xs text-foreground">{reading.heartRate}</td>
+                          <td className="px-4 py-2 text-xs text-foreground">{reading.spo2}</td>
+                          <td className="px-4 py-2">
+                            <span className={`inline-flex items-center rounded-full bg-${status.color}/20 px-2 py-0.5 text-xs font-medium text-${status.color}`}>
+                              {status.status}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="px-4 py-4 text-center text-sm text-muted-foreground">
+                        No recent readings
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div className="border-t border-muted pt-6 mt-6">
             <h4 className="mb-4 font-medium text-destructive">Danger Zone</h4>
             <div className="rounded-lg bg-destructive/10 p-4">
-              <h5 className="mb-2 font-medium text-destructive">Reset Bluetooth Connection</h5>
-              <p className="mb-3 text-sm text-muted-foreground">This will clear your Bluetooth connection status and require reconnecting to your ESP32 device.</p>
+              <h5 className="mb-2 font-medium text-destructive">Reset Device Connection</h5>
+              <p className="mb-3 text-sm text-muted-foreground">This will clear your device connection status and require reconnecting to your ESP32 device.</p>
               <button 
                 type="button" 
                 className="rounded-lg bg-muted px-4 py-2 font-medium text-destructive transition duration-200 hover:bg-destructive/20"
                 onClick={handleResetConnection}
               >
-                Reset Bluetooth
+                Reset Connection
               </button>
             </div>
           </div>
