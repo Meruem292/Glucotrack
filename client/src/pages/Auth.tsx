@@ -135,7 +135,7 @@ export default function Auth() {
   };
 
   return (
-    <div className="flex flex-1 flex-col auth-bg text-white" id="auth-container">
+    <div className="auth-bg text-white" id="auth-container">
       {/* Auth Tabs */}
       <div className="mb-6 mt-10 flex justify-center px-4">
         <div className="inline-flex rounded-lg bg-[#1a1a1a]/20 p-1">
