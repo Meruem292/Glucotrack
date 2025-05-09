@@ -8,6 +8,7 @@ import WorkoutRecommendationCard from "@/components/WorkoutRecommendationCard";
 import TokenInput from "@/components/TokenInput";
 import HealthTipsGenerator from "@/components/HealthTipsGenerator";
 import HealthTrends from "@/components/HealthTrends";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatDate } from "@/lib/utils";
 
 // Import SVG images
@@ -52,6 +53,8 @@ export default function Dashboard() {
   const [isConnected, setIsConnected] = useState(false);
   const [foodRecommendations, setFoodRecommendations] = useState<FoodRecommendation[]>([]);
   const [workoutRecommendations, setWorkoutRecommendations] = useState<WorkoutRecommendation[]>([]);
+  const [allReadings, setAllReadings] = useState<Reading[]>([]);
+  const [timeFrame, setTimeFrame] = useState("7"); // Default to 7 days
   const [userHealth, setUserHealth] = useState({
     age: 0,
     weight: 0,
@@ -88,11 +91,17 @@ export default function Dashboard() {
     const readingsUnsubscribe = onValue(readingsRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        // Get last reading
+        // Get all readings
         const readings = Object.values(data) as Reading[];
-        const latestReading = readings.sort((a, b) => b.timestamp - a.timestamp)[0] || null;
+        // Sort readings by timestamp (newest first)
+        const sortedReadings = readings.sort((a, b) => b.timestamp - a.timestamp);
         
+        // Set the latest reading
+        const latestReading = sortedReadings[0] || null;
         setLatestReading(latestReading);
+        
+        // Set all readings for analytics
+        setAllReadings(sortedReadings);
         
         // Get recommendations based on latest reading
         if (latestReading) {
@@ -100,6 +109,7 @@ export default function Dashboard() {
         }
       } else {
         setLatestReading(null);
+        setAllReadings([]);
       }
     });
 
@@ -111,6 +121,21 @@ export default function Dashboard() {
   }, []);
 
   // No longer needed due to real-time monitoring from Firebase
+
+  // Filter readings based on selected time frame
+  const getFilteredReadings = () => {
+    if (!allReadings.length) return [];
+    
+    const now = new Date().getTime();
+    const days = parseInt(timeFrame, 10);
+    
+    // If timeFrame is 0, return all readings
+    if (days === 0) return allReadings;
+    
+    // Filter readings based on time frame
+    const cutoffTime = now - (days * 24 * 60 * 60 * 1000);
+    return allReadings.filter(reading => reading.timestamp >= cutoffTime);
+  };
 
   const fetchRecommendations = (reading: Reading) => {
     // In a real app, this would use the readings to fetch personalized recommendations
@@ -313,6 +338,30 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Health Analytics Section */}
+      <div className="mb-8 overflow-hidden rounded-xl bg-secondary">
+        <div className="flex items-center justify-between bg-muted px-4 py-3">
+          <h3 className="font-medium">Health Analytics</h3>
+          <Select value={timeFrame} onValueChange={setTimeFrame}>
+            <SelectTrigger className="max-w-[180px] bg-secondary">
+              <SelectValue placeholder="Select time frame" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7">Last 7 days</SelectItem>
+              <SelectItem value="30">Last 30 days</SelectItem>
+              <SelectItem value="90">Last 90 days</SelectItem>
+              <SelectItem value="0">All time</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="p-4">
+          <HealthTrends 
+            readings={getFilteredReadings()}
+            timeFrame={timeFrame}
+          />
+        </div>
+      </div>
+      
       {/* Health Tips Generator */}
       <div className="mb-8">
         <HealthTipsGenerator
