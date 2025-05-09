@@ -31,13 +31,6 @@ interface Reading {
   timestamp: number;
 }
 
-interface HealthData {
-  glucose: number | null;
-  heartRate: number | null;
-  spo2: number | null;
-  timestamp: number | null;
-}
-
 interface FoodRecommendation {
   name: string;
   description: string;
@@ -55,15 +48,8 @@ interface WorkoutRecommendation {
 export default function Dashboard() {
   const [latestReading, setLatestReading] = useState<Reading | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [isCalibrating, setIsCalibrating] = useState(false);
   const [foodRecommendations, setFoodRecommendations] = useState<FoodRecommendation[]>([]);
   const [workoutRecommendations, setWorkoutRecommendations] = useState<WorkoutRecommendation[]>([]);
-  const [realtimeData, setRealtimeData] = useState<HealthData>({
-    glucose: null,
-    heartRate: null,
-    spo2: null,
-    timestamp: null
-  });
 
   useEffect(() => {
     const userId = auth.currentUser?.uid;
@@ -101,26 +87,7 @@ export default function Dashboard() {
     };
   }, []);
 
-  const handleDataReceived = (data: HealthData) => {
-    setRealtimeData(data);
-    // Also update recommendations based on real-time data
-    if (data.glucose !== null && data.heartRate !== null && data.spo2 !== null) {
-      fetchRecommendations({
-        glucose: data.glucose,
-        heartRate: data.heartRate,
-        spo2: data.spo2,
-        timestamp: data.timestamp || Date.now()
-      });
-    }
-  };
-
-  const handleCalibrationStart = () => {
-    setIsCalibrating(true);
-  };
-
-  const handleCalibrationEnd = () => {
-    setIsCalibrating(false);
-  };
+  // No longer needed due to real-time monitoring from Firebase
 
   const fetchRecommendations = (reading: Reading) => {
     // In a real app, this would use the readings to fetch personalized recommendations
