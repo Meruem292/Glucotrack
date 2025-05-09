@@ -3,8 +3,6 @@ import { ref, onValue, query, orderByChild } from "firebase/database";
 import { database, auth } from "@/lib/firebase";
 import { formatDate, getHealthStatus } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
 
 interface Reading {
   id: string;
@@ -59,78 +57,7 @@ export default function History() {
     return readings.filter(reading => reading.timestamp >= cutoffTime);
   };
 
-  // Export to PDF function
-  const exportToPDF = () => {
-    if (readings.length === 0) return;
-    
-    // Initialize the PDF document
-    const doc = new jsPDF();
-    
-    // Add title
-    doc.setFontSize(18);
-    doc.text("GLUCOTRACK - Health History Report", 14, 22);
-    
-    // Add date range information
-    doc.setFontSize(12);
-    let dateRangeText = "";
-    if (timeFrame === "0") {
-      dateRangeText = "All Time";
-    } else {
-      const days = parseInt(timeFrame);
-      const startDate = new Date(Date.now() - (days * 24 * 60 * 60 * 1000));
-      const endDate = new Date();
-      dateRangeText = `${formatDate(startDate)} - ${formatDate(endDate)}`;
-    }
-    doc.text(`Date Range: ${dateRangeText}`, 14, 30);
-    
-    // Get current date and time
-    const generateDate = new Date();
-    doc.text(`Generated on: ${formatDate(generateDate)}`, 14, 38);
-    
-    // Add user information if available
-    const user = auth.currentUser;
-    if (user) {
-      doc.text(`User: ${user.displayName || user.email || ""}`, 14, 46);
-    }
-    
-    // Create table data
-    const tableColumn = ["Date & Time", "Glucose (mg/dL)", "Heart Rate (BPM)", "SpO2 (%)", "Status"];
-    const tableRows = readings.map(reading => {
-      const status = getHealthStatus("glucose", reading.glucose);
-      return [
-        formatDate(new Date(reading.timestamp)),
-        reading.glucose.toString(),
-        reading.heartRate.toString(),
-        reading.spo2.toString(),
-        status.status
-      ];
-    });
-    
-    // Add the table
-    (doc as any).autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 55,
-      theme: 'grid',
-      styles: {
-        fontSize: 10,
-        cellPadding: 3,
-        halign: 'center'
-      },
-      headStyles: {
-        fillColor: [41, 65, 97],
-        textColor: [255, 255, 255],
-        fontStyle: 'bold'
-      },
-      alternateRowStyles: {
-        fillColor: [240, 240, 240]
-      }
-    });
-    
-    // Save the PDF
-    const timeFrameText = timeFrame === "0" ? "all-time" : `last-${timeFrame}-days`;
-    doc.save(`glucotrack-health-history-${timeFrameText}.pdf`);
-  };
+  // Pagination related calculations
 
   // Pagination
   const totalPages = Math.ceil(readings.length / itemsPerPage);
@@ -153,13 +80,6 @@ export default function History() {
               <SelectItem value="0">All time</SelectItem>
             </SelectContent>
           </Select>
-          <button 
-            onClick={exportToPDF}
-            disabled={readings.length === 0}
-            className="flex items-center rounded-lg bg-muted px-3 py-2 text-sm text-foreground hover:bg-blue-700/20 disabled:opacity-50 disabled:hover:bg-muted"
-          >
-            <i className="ri-download-line mr-1"></i> Export
-          </button>
         </div>
       </div>
 

@@ -7,6 +7,7 @@ import FoodRecommendationCard from "@/components/FoodRecommendationCard";
 import WorkoutRecommendationCard from "@/components/WorkoutRecommendationCard";
 import TokenInput from "@/components/TokenInput";
 import HealthTipsGenerator from "@/components/HealthTipsGenerator";
+import HealthTrends from "@/components/HealthTrends";
 import { formatDate } from "@/lib/utils";
 
 // Import SVG images
@@ -327,9 +328,8 @@ export default function Dashboard() {
 
       {/* Recommendations Section */}
       <div className="mb-8 overflow-hidden rounded-xl bg-secondary">
-        <div className="flex items-center justify-between bg-muted px-4 py-3">
+        <div className="bg-muted px-4 py-3">
           <h3 className="font-medium">Recommendations</h3>
-          <button className="text-sm text-accent">View All</button>
         </div>
         <div className="p-4">
           {/* Food Recommendations */}

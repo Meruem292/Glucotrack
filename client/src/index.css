@@ -3,39 +3,64 @@
 @tailwind utilities;
 
 :root {
-  --background: 217 35% 12%;
-  --foreground: 0 0% 100%;
-  --muted: 217 35% 18%;
-  --muted-foreground: 215 16% 72%;
-  --popover: 217 35% 12%;
-  --popover-foreground: 0 0% 100%;
-  --card: 223 30% 9%;
-  --card-foreground: 0 0% 100%;
-  --border: 217 27% 16%;
-  --input: 217 27% 16%;
-  --primary: 217 69% 55%;
+  /* Darker background as seen in the image */
+  --background: 220 40% 8%;
+  --foreground: 210 40% 98%;
+  
+  /* Slightly lighter for component backgrounds */
+  --muted: 220 35% 12%;
+  --muted-foreground: 210 30% 80%;
+  
+  /* Popup elements */
+  --popover: 220 40% 8%;
+  --popover-foreground: 210 40% 98%;
+  
+  /* Card elements - slightly lighter than background */
+  --card: 220 35% 10%;
+  --card-foreground: 210 40% 98%;
+  
+  /* Borders should be visible but subtle */
+  --border: 220 25% 15%;
+  --input: 220 25% 15%;
+  
+  /* Blue accent color from image */
+  --primary: 217 75% 50%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 223 30% 9%;
-  --secondary-foreground: 0 0% 100%;
-  --accent: 217 69% 55%;
+  
+  /* Secondary elements - slightly lighter than background */
+  --secondary: 220 35% 12%;
+  --secondary-foreground: 210 40% 98%;
+  
+  /* Blue accent color for highlights */
+  --accent: 217 75% 50%;
   --accent-foreground: 0 0% 100%;
+  
+  /* Alert colors */
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
-  --ring: 217 69% 55%;
+  
+  /* Other settings */
+  --ring: 217 75% 50%;
   --radius: 0.5rem;
-  --chart-1: 217 69% 55%;
+  
+  /* Chart colors */
+  --chart-1: 217 75% 50%;
   --chart-2: 142 71% 45%;
   --chart-3: 37 90% 51%;
   --chart-4: 4 86% 58%;
   --chart-5: 262 83% 58%;
-  --sidebar-background: 223 30% 9%;
-  --sidebar-foreground: 0 0% 100%;
-  --sidebar-primary: 217 69% 55%;
+  
+  /* Sidebar colors */
+  --sidebar-background: 220 35% 10%;
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-primary: 217 75% 50%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 217 69% 55%;
+  --sidebar-accent: 217 75% 50%;
   --sidebar-accent-foreground: 0 0% 100%;
-  --sidebar-border: 217 27% 16%;
-  --sidebar-ring: 217 69% 55%;
+  --sidebar-border: 220 25% 15%;
+  --sidebar-ring: 217 75% 50%;
+  
+  /* Status colors */
   --success: 142 71% 45%;
   --warning: 37 90% 51%;
   --danger: 4 86% 58%;
@@ -47,7 +72,7 @@
   }
 
   body {
-    @apply bg-primary text-foreground font-sans antialiased;
+    @apply bg-background text-foreground font-sans antialiased;
   }
   
   .auth-bg {
