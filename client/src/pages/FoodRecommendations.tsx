@@ -34,7 +34,18 @@ export default function FoodRecommendations() {
       if (data) {
         // Get last reading
         const readings = Object.values(data) as Reading[];
-        const latestReading = readings.sort((a, b) => b.timestamp - a.timestamp)[0] || null;
+        const latestReading = readings.sort((a, b) => {
+          // If timestamps are strings, compare them lexicographically (reverse order)
+          if (typeof a.timestamp === 'string' && typeof b.timestamp === 'string') {
+            return b.timestamp.localeCompare(a.timestamp);
+          }
+          // If timestamps are numbers, subtract normally
+          else if (typeof a.timestamp === 'number' && typeof b.timestamp === 'number') {
+            return b.timestamp - a.timestamp;
+          }
+          // Fallback sorting (mixed types)
+          return String(b.timestamp).localeCompare(String(a.timestamp));
+        })[0] || null;
         setLatestReading(latestReading);
         
         // Get food recommendations based on readings
