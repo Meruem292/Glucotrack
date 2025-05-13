@@ -72,8 +72,10 @@ export default function TokenInput({ onConnectionStatusChange }: TokenInputProps
       // Set connection status to true
       await set(ref(database, `users/${userId}/profile/deviceConnected`), true);
       
-      // Update last connection timestamp
-      await set(ref(database, `users/${userId}/profile/lastConnection`), Date.now());
+      // Update last connection timestamp in proper format (YYYY-MM-DD HH:MM:SS)
+      const now = new Date();
+      const formattedDate = now.toISOString().replace('T', ' ').substring(0, 19);
+      await set(ref(database, `users/${userId}/profile/lastConnection`), formattedDate);
       
       setStatusMessage("Device connected! Receiving data...");
     } catch (error) {

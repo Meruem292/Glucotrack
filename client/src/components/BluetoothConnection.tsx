@@ -94,10 +94,12 @@ export default function BluetoothConnection({
         setServer(null);
         setCharacteristic(null);
         
-        // Update the connection status in Firebase
+        // Update the connection status in Firebase with properly formatted date
+        const now = new Date();
+        const formattedDate = now.toISOString().replace('T', ' ').substring(0, 19);
         update(ref(database, `users/${userId}/profile`), {
           bluetoothConnected: false,
-          lastConnection: Date.now()
+          lastConnection: formattedDate
         });
         
         toast({
@@ -290,11 +292,12 @@ export default function BluetoothConnection({
           if (onCalibrationEnd) onCalibrationEnd();
         }
         
+        // Format data to 2 decimal places
         const healthData: HealthData = {
-          glucose: data.glucose,
-          heartRate: data.heartRate,
-          spo2: data.spo2,
-          timestamp: Date.now()
+          glucose: parseFloat(data.glucose.toFixed(2)),
+          heartRate: parseFloat(data.heartRate.toFixed(2)),
+          spo2: parseFloat(data.spo2.toFixed(2)),
+          timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19)
         };
         
         // Store the reading in Firebase
