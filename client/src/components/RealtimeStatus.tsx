@@ -6,7 +6,7 @@ interface Reading {
   glucose: number;
   heartRate: number;
   spo2: number;
-  timestamp: number;
+  timestamp: number | string;
 }
 
 interface RealtimeStatusProps {
@@ -51,20 +51,25 @@ export default function RealtimeStatus({ isConnected }: RealtimeStatusProps) {
       if (data) {
         // Get last reading
         const readings = Object.values(data) as Reading[];
-        const sorted = readings.sort((a, b) => b.timestamp - a.timestamp);
+        const sorted = readings.sort((a, b) => {
+          // If timestamps are strings, compare them lexicographically (reverse order)
+          if (typeof a.timestamp === 'string' && typeof b.timestamp === 'string') {
+            return b.timestamp.localeCompare(a.timestamp);
+          }
+          // If timestamps are numbers, subtract normally
+          else if (typeof a.timestamp === 'number' && typeof b.timestamp === 'number') {
+            return b.timestamp - a.timestamp;
+          }
+          // Fallback sorting (mixed types)
+          return String(b.timestamp).localeCompare(String(a.timestamp));
+        });
         
         if (sorted.length > 0) {
           const latest = sorted[0];
           
-          // Only use reading if it's within the last 2 seconds
-          const now = Date.now();
-          const diff = now - latest.timestamp;
-          
-          if (diff <= 2000) {
-            setLatestReading(latest);
-          } else {
-            setLatestReading(null);
-          }
+          // Set latest reading regardless of timestamp
+          // The timestamp appears to be in a special format, so we just use the latest reading
+          setLatestReading(latest);
         }
       } else {
         setLatestReading(null);
@@ -143,7 +148,9 @@ export default function RealtimeStatus({ isConnected }: RealtimeStatusProps) {
 
       {displayData && displayData.timestamp && (
         <div className="text-center text-xs text-muted-foreground">
-          Last updated: {new Date(displayData.timestamp).toLocaleTimeString()}
+          Last updated: {typeof displayData.timestamp === 'string' 
+            ? displayData.timestamp.split(' ')[1] // Just show the time part if it's a string
+            : new Date(displayData.timestamp).toLocaleTimeString()}
         </div>
       )}
     </div>

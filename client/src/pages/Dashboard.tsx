@@ -31,7 +31,7 @@ interface Reading {
   glucose: number;
   heartRate: number;
   spo2: number;
-  timestamp: number;
+  timestamp: number | string;
 }
 
 interface FoodRecommendation {
@@ -94,7 +94,18 @@ export default function Dashboard() {
         // Get all readings
         const readings = Object.values(data) as Reading[];
         // Sort readings by timestamp (newest first)
-        const sortedReadings = readings.sort((a, b) => b.timestamp - a.timestamp);
+        const sortedReadings = readings.sort((a, b) => {
+          // If timestamps are strings, compare them lexicographically (reverse order)
+          if (typeof a.timestamp === 'string' && typeof b.timestamp === 'string') {
+            return b.timestamp.localeCompare(a.timestamp);
+          }
+          // If timestamps are numbers, subtract normally
+          else if (typeof a.timestamp === 'number' && typeof b.timestamp === 'number') {
+            return b.timestamp - a.timestamp;
+          }
+          // Fallback sorting (mixed types)
+          return String(b.timestamp).localeCompare(String(a.timestamp));
+        });
         
         // Set the latest reading
         const latestReading = sortedReadings[0] || null;
@@ -332,7 +343,11 @@ export default function Dashboard() {
           />
           <div className="text-sm text-muted-foreground">
             Last update: <span>{
-              latestReading ? formatDate(new Date(latestReading.timestamp)) : "No data"
+              latestReading ? (
+                typeof latestReading.timestamp === 'string' 
+                  ? latestReading.timestamp 
+                  : formatDate(new Date(latestReading.timestamp))
+              ) : "No data"
             }</span>
           </div>
         </div>
