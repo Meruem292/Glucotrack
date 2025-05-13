@@ -7,7 +7,7 @@ interface HealthData {
   glucose: number | null;
   heartRate: number | null;
   spo2: number | null;
-  timestamp: number | null;
+  timestamp: string | number | null;
 }
 
 interface BluetoothConnectionProps {
@@ -387,10 +387,12 @@ export default function BluetoothConnection({
     setIsDemoMode(true);
     setIsConnected(true);
     
-    // Update Firebase status
+    // Update Firebase status with properly formatted timestamp
+    const now = new Date();
+    const formattedDate = now.toISOString().replace('T', ' ').substring(0, 19);
     update(ref(database, `users/${userId}/profile`), {
       bluetoothConnected: true,
-      lastConnection: Date.now()
+      lastConnection: formattedDate
     });
     
     toast({
@@ -417,16 +419,20 @@ export default function BluetoothConnection({
     // Don't continue if demo mode has been disabled
     if (!isDemoMode) return;
     
-    // Generate reasonable random values
-    const glucose = Math.floor(80 + Math.random() * 60); // 80-140 range
-    const heartRate = Math.floor(60 + Math.random() * 40); // 60-100 range
-    const spo2 = Math.floor(95 + Math.random() * 5); // 95-100 range
+    // Generate reasonable random values (with 2 decimal places)
+    const glucose = parseFloat((80 + Math.random() * 60).toFixed(2)); // 80-140 range
+    const heartRate = parseFloat((60 + Math.random() * 40).toFixed(2)); // 60-100 range
+    const spo2 = parseFloat((95 + Math.random() * 5).toFixed(2)); // 95-100 range
+    
+    // Use consistent timestamp format
+    const now = new Date();
+    const formattedDate = now.toISOString().replace('T', ' ').substring(0, 19);
     
     const healthData: HealthData = {
       glucose,
       heartRate,
       spo2,
-      timestamp: Date.now()
+      timestamp: formattedDate
     };
     
     // Save to Firebase

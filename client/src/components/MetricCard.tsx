@@ -45,7 +45,7 @@ export default function MetricCard({ title, value, unit, icon, metricType }: Met
       <div className="flex flex-col">
         <span className="mb-1 text-sm text-muted-foreground">{title}</span>
         <div className="flex items-baseline">
-          <span className="text-3xl font-bold text-foreground">{value}</span>
+          <span className="text-3xl font-bold text-foreground">{value.toFixed(2)}</span>
           <span className="ml-1 text-sm text-muted-foreground">{unit}</span>
         </div>
         <div className="mt-2 flex items-center">
