@@ -145,7 +145,28 @@ export default function Dashboard() {
     
     // Filter readings based on time frame
     const cutoffTime = now - (days * 24 * 60 * 60 * 1000);
-    return allReadings.filter(reading => reading.timestamp >= cutoffTime);
+    
+    return allReadings.filter(reading => {
+      // If timestamp is a number, do direct comparison
+      if (typeof reading.timestamp === 'number') {
+        return reading.timestamp >= cutoffTime;
+      } 
+      // If timestamp is a string, we need to compare dates
+      else if (typeof reading.timestamp === 'string') {
+        try {
+          // Try to convert string timestamp to Date object for comparison
+          // Assuming format "*YYYY-MM-DD HH:MM:SS*"
+          const dateParts = reading.timestamp.replace(/[*"]/g, '').split(' ');
+          const dateStr = dateParts.join('T');
+          const readingDate = new Date(dateStr);
+          return !isNaN(readingDate.getTime()) && readingDate.getTime() >= cutoffTime;
+        } catch (e) {
+          // If date parsing fails, include the reading by default
+          return true;
+        }
+      }
+      return true;
+    });
   };
 
   const fetchRecommendations = (reading: Reading) => {

@@ -20,7 +20,7 @@ interface Reading {
   glucose: number;
   heartRate: number;
   spo2: number;
-  timestamp: number;
+  timestamp: number | string;
 }
 
 interface HealthTrendsProps {
@@ -40,12 +40,44 @@ export default function HealthTrends({ readings, timeFrame }: HealthTrendsProps)
     }
 
     // Sort readings by timestamp (oldest first for charting)
-    const sortedReadings = [...readings].sort((a, b) => a.timestamp - b.timestamp);
+    const sortedReadings = [...readings].sort((a, b) => {
+      // If timestamps are strings, compare them lexicographically
+      if (typeof a.timestamp === 'string' && typeof b.timestamp === 'string') {
+        return a.timestamp.localeCompare(b.timestamp);
+      }
+      // If timestamps are numbers, subtract normally
+      else if (typeof a.timestamp === 'number' && typeof b.timestamp === 'number') {
+        return a.timestamp - b.timestamp;
+      }
+      // Fallback sorting (mixed types)
+      return String(a.timestamp).localeCompare(String(b.timestamp));
+    });
 
     // Process for chart display
     const processed = sortedReadings.map((reading) => {
-      // Format timestamp for display
-      const date = new Date(reading.timestamp);
+      // Format timestamp for display - handle both string and number formats
+      let date;
+      
+      if (typeof reading.timestamp === 'string') {
+        try {
+          // Try to handle the special timestamp format
+          const cleanTimestamp = reading.timestamp.replace(/[*"]/g, '');
+          // Replace space with T for ISO format
+          const parts = cleanTimestamp.split(' ');
+          if (parts.length === 2) {
+            const isoString = `${parts[0]}T${parts[1]}`;
+            date = new Date(isoString);
+          } else {
+            date = new Date(cleanTimestamp);
+          }
+        } catch (e) {
+          // Fallback to current date if parsing fails
+          date = new Date();
+        }
+      } else {
+        date = new Date(reading.timestamp);
+      }
+      
       const formattedDate = date.toLocaleDateString('en-US', { 
         month: 'short', 
         day: 'numeric',
