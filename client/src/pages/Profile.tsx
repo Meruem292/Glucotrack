@@ -23,7 +23,7 @@ interface Reading {
   glucose: number;
   heartRate: number;
   spo2: number;
-  timestamp: number;
+  timestamp: number | string;
 }
 
 export default function Profile() {
@@ -97,7 +97,18 @@ export default function Profile() {
           if (data) {
             const readingsArray = Object.values(data) as Reading[];
             // Sort by timestamp (newest first)
-            const sortedReadings = readingsArray.sort((a, b) => b.timestamp - a.timestamp);
+            const sortedReadings = readingsArray.sort((a, b) => {
+              // If timestamps are strings, compare them lexicographically (reverse order)
+              if (typeof a.timestamp === 'string' && typeof b.timestamp === 'string') {
+                return b.timestamp.localeCompare(a.timestamp);
+              }
+              // If timestamps are numbers, subtract normally
+              else if (typeof a.timestamp === 'number' && typeof b.timestamp === 'number') {
+                return b.timestamp - a.timestamp;
+              }
+              // Fallback sorting (mixed types)
+              return String(b.timestamp).localeCompare(String(a.timestamp));
+            });
             setRecentReadings(sortedReadings);
           }
         });

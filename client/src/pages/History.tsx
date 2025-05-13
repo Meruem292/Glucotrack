@@ -9,7 +9,7 @@ interface Reading {
   glucose: number;
   heartRate: number;
   spo2: number;
-  timestamp: number;
+  timestamp: number | string;
 }
 
 export default function History() {
@@ -54,7 +54,33 @@ export default function History() {
     if (days === 0) return readings; // All time
     
     const cutoffTime = Date.now() - (days * 24 * 60 * 60 * 1000);
-    return readings.filter(reading => reading.timestamp >= cutoffTime);
+    
+    return readings.filter(reading => {
+      // If timestamp is a number, do direct comparison
+      if (typeof reading.timestamp === 'number') {
+        return reading.timestamp >= cutoffTime;
+      } 
+      // If timestamp is a string, we need to compare dates
+      else if (typeof reading.timestamp === 'string') {
+        try {
+          // Try to convert string timestamp to Date object for comparison
+          // Assuming format like "*YYYY-MM-DD HH:MM:SS*"
+          const cleanTimestamp = reading.timestamp.replace(/[*"]/g, '');
+          // Replace space with T for ISO format
+          const parts = cleanTimestamp.split(' ');
+          if (parts.length === 2) {
+            const isoString = `${parts[0]}T${parts[1]}`;
+            const readingDate = new Date(isoString);
+            return !isNaN(readingDate.getTime()) && readingDate.getTime() >= cutoffTime;
+          }
+          return true;
+        } catch (e) {
+          // If date parsing fails, include the reading by default
+          return true;
+        }
+      }
+      return true;
+    });
   };
 
   // Pagination related calculations

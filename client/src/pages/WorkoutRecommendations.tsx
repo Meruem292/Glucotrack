@@ -7,7 +7,7 @@ interface Reading {
   glucose: number;
   heartRate: number;
   spo2: number;
-  timestamp: number;
+  timestamp: number | string;
 }
 
 interface WorkoutItem {
