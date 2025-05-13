@@ -197,10 +197,12 @@ export default function BluetoothConnection({
 
         setIsConnected(true);
 
-        // Update the connection status in Firebase
+        // Update the connection status in Firebase with properly formatted date
+        const now = new Date();
+        const formattedDate = now.toISOString().replace('T', ' ').substring(0, 19);
         update(ref(database, `users/${userId}/profile`), {
           bluetoothConnected: true,
-          lastConnection: Date.now()
+          lastConnection: formattedDate
         });
 
         // At this point, the device is connected and we're ready to receive data

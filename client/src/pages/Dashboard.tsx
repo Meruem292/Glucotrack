@@ -362,15 +362,7 @@ export default function Dashboard() {
           <RealtimeStatus 
             isConnected={isConnected}
           />
-          <div className="text-sm text-muted-foreground">
-            Last update: <span>{
-              latestReading ? (
-                typeof latestReading.timestamp === 'string' 
-                  ? latestReading.timestamp 
-                  : formatDate(new Date(latestReading.timestamp))
-              ) : "No data"
-            }</span>
-          </div>
+          {/* Timestamp is already shown in RealtimeStatus */}
         </div>
       </div>
 
