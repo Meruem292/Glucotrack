@@ -1,0 +1,55 @@
+[debug] [2025-05-09T06:02:49.004Z] ----------------------------------------------------------------------
+[debug] [2025-05-09T06:02:49.007Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\mherwen romero\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js emulators:start
+[debug] [2025-05-09T06:02:49.007Z] CLI Version:   14.3.0
+[debug] [2025-05-09T06:02:49.008Z] Platform:      win32
+[debug] [2025-05-09T06:02:49.008Z] Node Version:  v20.14.0
+[debug] [2025-05-09T06:02:49.008Z] Time:          Fri May 09 2025 14:02:49 GMT+0800 (Central Indonesia Time)
+[debug] [2025-05-09T06:02:49.008Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-05-09T06:02:49.251Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-05-09T06:02:49.251Z] > authorizing via signed-in user (newroskoto@gmail.com)
+[info] i  emulators: Starting emulators: hosting {"metadata":{"emulator":{"name":"hub"},"message":"Starting emulators: hosting"}}
+[debug] [2025-05-09T06:02:49.260Z] [logging] Logging Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-05-09T06:02:49.261Z] [hosting] Hosting Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-05-09T06:02:49.261Z] assigned listening specs for emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"hosting":[{"address":"127.0.0.1","family":"IPv4","port":5000}]},"metadata":{"message":"assigned listening specs for emulators"}}
+[debug] [2025-05-09T06:02:49.265Z] [hub] writing locator at C:\Users\MHERWE~1\AppData\Local\Temp\hub-glucotrack-47958.json
+[debug] [2025-05-09T06:02:49.281Z] Checked if tokens are valid: false, expires at: 1746770927389
+[debug] [2025-05-09T06:02:49.281Z] Checked if tokens are valid: false, expires at: 1746770927389
+[debug] [2025-05-09T06:02:49.281Z] > refreshing access token with scopes: []
+[debug] [2025-05-09T06:02:49.283Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-05-09T06:02:49.283Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-05-09T06:02:51.184Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-05-09T06:02:51.184Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-05-09T06:02:51.190Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/glucotrack-47958/sites 
+[debug] [2025-05-09T06:02:53.549Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/glucotrack-47958/sites 200
+[debug] [2025-05-09T06:02:53.549Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/glucotrack-47958/sites {"sites":[{"name":"projects/glucotrack-47958/sites/glucotrack-47958","defaultUrl":"https://glucotrack-47958.web.app","appId":"1:1038369727029:web:00403ded52e6ed32c9077c","type":"DEFAULT_SITE"}]}
+[debug] [2025-05-09T06:02:53.549Z] Checked if tokens are valid: true, expires at: 1746774170184
+[debug] [2025-05-09T06:02:53.549Z] Checked if tokens are valid: true, expires at: 1746774170184
+[debug] [2025-05-09T06:02:53.550Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/glucotrack-47958/webApps/1:1038369727029:web:00403ded52e6ed32c9077c/config [none]
+[debug] [2025-05-09T06:02:58.133Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/glucotrack-47958/webApps/1:1038369727029:web:00403ded52e6ed32c9077c/config 200
+[debug] [2025-05-09T06:02:58.134Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/glucotrack-47958/webApps/1:1038369727029:web:00403ded52e6ed32c9077c/config {"projectId":"glucotrack-47958","appId":"1:1038369727029:web:00403ded52e6ed32c9077c","databaseURL":"https://glucotrack-47958-default-rtdb.firebaseio.com","storageBucket":"glucotrack-47958.firebasestorage.app","apiKey":"AIzaSyB-n9OVoxcjtc3k0nKzjJI4me3NeRAtprc","authDomain":"glucotrack-47958.firebaseapp.com","messagingSenderId":"1038369727029","measurementId":"G-RZNCQZJELN"}
+[debug] [2025-05-09T06:02:58.138Z] Checked if tokens are valid: true, expires at: 1746774170184
+[debug] [2025-05-09T06:02:58.138Z] Checked if tokens are valid: true, expires at: 1746774170184
+[debug] [2025-05-09T06:02:58.138Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/glucotrack-47958 [none]
+[debug] [2025-05-09T06:02:58.446Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/glucotrack-47958 200
+[debug] [2025-05-09T06:02:58.446Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/glucotrack-47958 {"projectId":"glucotrack-47958","projectNumber":"1038369727029","displayName":"GlucoTrack","name":"projects/glucotrack-47958","resources":{"hostingSite":"glucotrack-47958","realtimeDatabaseInstance":"glucotrack-47958-default-rtdb"},"state":"ACTIVE","etag":"1_cdc3bf85-cc97-4866-ac9c-8c47c5c5abcf"}
+[info] i  hosting[glucotrack-47958]: Serving hosting files from: dist/public {"metadata":{"emulator":{"name":"hosting"},"message":"Serving hosting files from: \u001b[1mdist/public\u001b[22m"}}
+[info] +  hosting[glucotrack-47958]: Local server: http://127.0.0.1:5000 {"metadata":{"emulator":{"name":"hosting"},"message":"Local server: \u001b[4m\u001b[1mhttp://127.0.0.1:5000\u001b[22m\u001b[24m"}}
+[warn] !  emulators: The Emulator UI is not starting, either because none of the running emulators have a UI component or the Emulator UI cannot determine the Project ID. Pass the --project flag to specify a project. {"metadata":{"emulator":{"name":"hub"},"message":"The Emulator UI is not starting, either because none of the running emulators have a UI component or the Emulator UI cannot determine the Project ID. Pass the --project flag to specify a project."}}
+[debug] [2025-05-09T06:02:58.471Z] Could not find VSCode notification endpoint: FetchError: request to http://localhost:40001/vscode/notify failed, reason: . If you are not running the Firebase Data Connect VSCode extension, this is expected and not an issue.
+[info] 
+┌─────────────────────────────────────────────────────────────┐
+│ ✔  All emulators ready! It is now safe to connect your app. │
+└─────────────────────────────────────────────────────────────┘
+
+┌──────────┬────────────────┐
+│ Emulator │ Host:Port      │
+├──────────┼────────────────┤
+│ Hosting  │ 127.0.0.1:5000 │
+└──────────┴────────────────┘
+  Emulator Hub host: 127.0.0.1 port: 4400
+  Other reserved ports: 4500
+
+Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
+ 
+[debug] [2025-05-09T06:04:27.168Z] Received signal SIGHUP 1
