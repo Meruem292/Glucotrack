@@ -4,12 +4,13 @@ import { getDatabase } from "firebase/database";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
-  databaseURL: `https://${import.meta.env.VITE_FIREBASE_PROJECT_ID}-default-rtdb.firebaseio.com`,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebasestorage.app`,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  apiKey: "AIzaSyAR-veptcWwAV5-MvQQkbx3tJXIR85kiDs",
+  authDomain: "glucotrack-8eea8.firebaseapp.com",
+  projectId: "glucotrack-8eea8",
+  storageBucket: "glucotrack-8eea8.firebasestorage.app",
+  messagingSenderId: "449946335990",
+  appId: "1:449946335990:web:5eeac0a68be201f4140ad7",
+  measurementId: "G-0Y0NT0QQ44"
 };
 
 // Initialize Firebase
