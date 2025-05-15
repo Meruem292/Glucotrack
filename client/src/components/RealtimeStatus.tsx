@@ -114,18 +114,43 @@ export default function RealtimeStatus({ isConnected }: RealtimeStatusProps) {
         </button>
       </div>
 
-      {/* Status message bar */}
-      <div className="mb-4 rounded-lg bg-muted p-3 text-center">
-        <div className="text-sm font-medium text-muted-foreground">
-          {displayData ? 'Data received successfully' : 'No data available'}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="rounded-lg bg-muted p-4 text-center">
+          <div className="mb-1 text-sm font-medium text-muted-foreground">Glucose</div>
+          <div className="flex items-baseline justify-center">
+            <div className="text-3xl font-semibold">
+              {displayData ? displayData.glucose : '0'}
+            </div>
+            <div className="ml-1 text-sm text-muted-foreground">mg/dL</div>
+          </div>
+        </div>
+
+        <div className="rounded-lg bg-muted p-4 text-center">
+          <div className="mb-1 text-sm font-medium text-muted-foreground">Heart Rate</div>
+          <div className="flex items-baseline justify-center">
+            <div className="text-3xl font-semibold">
+              {displayData ? displayData.heartRate : '0'}
+            </div>
+            <div className="ml-1 text-sm text-muted-foreground">BPM</div>
+          </div>
+        </div>
+
+        <div className="rounded-lg bg-muted p-4 text-center">
+          <div className="mb-1 text-sm font-medium text-muted-foreground">SpO2</div>
+          <div className="flex items-baseline justify-center">
+            <div className="text-3xl font-semibold">
+              {displayData ? displayData.spo2 : '0'}
+            </div>
+            <div className="ml-1 text-sm text-muted-foreground">%</div>
+          </div>
         </div>
       </div>
 
       {displayData && displayData.timestamp && (
         <div className="text-center text-xs text-muted-foreground">
           Last updated: {typeof displayData.timestamp === 'string' 
-            ? displayData.timestamp // Show the full formatted timestamp
-            : new Date(displayData.timestamp).toLocaleString()}
+            ? displayData.timestamp.split(' ')[1] // Just show the time part if it's a string
+            : new Date(displayData.timestamp).toLocaleTimeString()}
         </div>
       )}
     </div>
